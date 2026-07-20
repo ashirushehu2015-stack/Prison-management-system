@@ -77,9 +77,17 @@ export default function Login({ users, onLogin }: LoginProps) {
           </div>
 
           {/* System Title */}
-          <h2 className="text-3xl font-black tracking-tight text-white uppercase font-sans mb-3 drop-shadow-sm">
-            Prison Management<br />System
-          </h2>
+          <div className="space-y-1 mb-4 select-none">
+            <h1 className="text-5xl font-black tracking-tight text-white uppercase leading-none">
+              MIT 800
+            </h1>
+            <h2 className="text-2xl font-extrabold text-white tracking-wide uppercase">
+              Capstone Project.
+            </h2>
+            <p className="text-[10px] font-bold text-rose-400 tracking-widest uppercase mt-2">
+              Prison Management System
+            </p>
+          </div>
 
           {/* Slogan Description */}
           <p className="text-blue-100/85 text-xs font-medium leading-relaxed max-w-[340px] mb-8 font-sans">
@@ -116,6 +124,19 @@ export default function Login({ users, onLogin }: LoginProps) {
       {/* RIGHT SIDE: Elegant White Sign-In Panel */}
       <div className="flex flex-col justify-between p-6 sm:p-12 md:p-16 bg-white w-full min-h-screen">
         
+        {/* Mobile/Tablet Header Banner (Visible when left panel is hidden) */}
+        <div className="lg:hidden w-full bg-[#0B2545] text-white p-4.5 rounded-2xl mb-4 text-center select-none shadow-md">
+          <h1 className="font-black text-2xl tracking-tight leading-none uppercase">
+            MIT 800
+          </h1>
+          <p className="font-extrabold text-xs text-white tracking-wider uppercase mt-1.5">
+            Capstone Project.
+          </p>
+          <p className="text-[8px] text-rose-400 font-bold tracking-widest uppercase mt-1">
+            Prison Management System
+          </p>
+        </div>
+
         {/* Top University Brand Header */}
         <div className="flex flex-col items-center text-center select-none space-y-2">
           <IconicLogo variant="trans" showBg={true} className="w-8 h-8" />

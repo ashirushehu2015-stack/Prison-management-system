@@ -162,6 +162,7 @@ export default function InmatesList({ inmates, onAddInmate, onUpdateInmate, cell
 
   const handleAddMedicationSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (currentUser.role !== "Medical") return;
     if (!selectedInmate || !newMedForm.name || !newMedForm.dosage) return;
 
     const medId = `MED-${Math.floor(100 + Math.random() * 900)}`;
@@ -199,6 +200,7 @@ export default function InmatesList({ inmates, onAddInmate, onUpdateInmate, cell
   };
 
   const handleDiscontinueMedication = (medId: string) => {
+    if (currentUser.role !== "Medical") return;
     if (!selectedInmate) return;
 
     const updatedMedications = (selectedInmate.medications || []).map((med) => {
@@ -665,13 +667,19 @@ export default function InmatesList({ inmates, onAddInmate, onUpdateInmate, cell
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
                   {medicalTab === "medications" ? (
-                    <button
-                      type="button"
-                      onClick={() => setIsAddMedModalOpen(true)}
-                      className="inline-flex items-center gap-1.5 text-xs bg-emerald-600 hover:bg-emerald-700 text-white font-medium px-3 py-1.5 rounded transition-all cursor-pointer shadow-3xs"
-                    >
-                      <Plus className="w-3.5 h-3.5" /> Prescribe Medication
-                    </button>
+                    currentUser.role === "Medical" ? (
+                      <button
+                        type="button"
+                        onClick={() => setIsAddMedModalOpen(true)}
+                        className="inline-flex items-center gap-1.5 text-xs bg-emerald-600 hover:bg-emerald-700 text-white font-medium px-3 py-1.5 rounded transition-all cursor-pointer shadow-3xs"
+                      >
+                        <Plus className="w-3.5 h-3.5" /> Prescribe Medication
+                      </button>
+                    ) : (
+                      <div className="inline-flex items-center gap-1.5 text-xs bg-slate-100 text-slate-400 font-medium px-3 py-1.5 rounded border border-slate-200 select-none cursor-not-allowed">
+                        <Lock className="w-3 h-3 text-slate-400" /> Prescribe Medication (Medical Only)
+                      </div>
+                    )
                   ) : (
                     <button
                       type="button"
@@ -763,7 +771,7 @@ export default function InmatesList({ inmates, onAddInmate, onUpdateInmate, cell
                               </div>
                               <div className="flex items-center gap-1.5">
                                 <span className="text-slate-500 font-bold">By: {med.prescribedBy.split(" ")[0]}</span>
-                                {isActive && (
+                                {isActive && currentUser.role === "Medical" && (
                                   <button
                                     type="button"
                                     onClick={() => handleDiscontinueMedication(med.id)}

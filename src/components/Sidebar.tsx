@@ -62,12 +62,18 @@ export default function Sidebar({
   return (
     <aside className="w-64 bg-slate-900 text-slate-100 flex flex-col border-r border-slate-800 h-screen sticky top-0 shrink-0 select-none">
       {/* Header */}
-      <div className="p-4 border-b border-slate-800 flex items-center gap-3">
-        <IconicLogo variant="trans" showBg={true} className="w-7 h-7" />
+      <div className="p-4 border-b border-slate-800 flex items-center gap-3 bg-slate-950/30">
+        <IconicLogo variant="trans" showBg={true} className="w-8 h-8 pointer-events-none" />
         <div className="min-w-0">
-          <h1 className="font-bold text-xs leading-none tracking-tight text-white uppercase truncate">MIT 800</h1>
-          <p className="text-[10px] text-rose-500 font-bold tracking-tight uppercase mt-0.5">CAPSTONE PROJECT</p>
-          <p className="text-[8px] text-slate-500 font-medium tracking-normal uppercase">Iconic University</p>
+          <h1 className="font-black text-sm text-white tracking-tight leading-tight uppercase">
+            MIT 800
+          </h1>
+          <p className="font-extrabold text-[11px] text-white tracking-wider uppercase mt-0.5">
+            Capstone Project.
+          </p>
+          <p className="text-[8px] text-slate-400 font-semibold tracking-normal uppercase mt-0.5">
+            Iconic University
+          </p>
         </div>
       </div>
 

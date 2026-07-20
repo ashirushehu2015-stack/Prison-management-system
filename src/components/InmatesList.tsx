@@ -18,7 +18,9 @@ import {
   X,
   FileDown,
   Edit,
-  Lock
+  Lock,
+  Plus,
+  FlaskConical
 } from "lucide-react";
 import { Inmate, AIRehabPlan, SecurityLevel, InmateStatus, UserAccount } from "../types";
 
@@ -124,6 +126,171 @@ export default function InmatesList({ inmates, onAddInmate, onUpdateInmate, cell
     onUpdateInmate(updated);
     setSelectedInmate(updated);
     setIsEditModalOpen(false);
+  };
+
+  // Medical care state & form handlers
+  const [medicalTab, setMedicalTab] = useState<"medications" | "investigations">("medications");
+  const [isAddMedModalOpen, setIsAddMedModalOpen] = useState(false);
+  const [isAddInvModalOpen, setIsAddInvModalOpen] = useState(false);
+  const [isUpdateInvModalOpen, setIsUpdateInvModalOpen] = useState(false);
+  const [selectedInvToUpdate, setSelectedInvToUpdate] = useState<any | null>(null);
+
+  const [newMedForm, setNewMedForm] = useState({
+    name: "",
+    dosage: "",
+    frequency: "",
+    startDate: new Date().toISOString().split("T")[0],
+    endDate: "",
+    prescribedBy: currentUser.name,
+    purpose: ""
+  });
+
+  const [newInvForm, setNewInvForm] = useState({
+    type: "",
+    requestDate: new Date().toISOString().split("T")[0],
+    status: "Pending" as "Pending" | "Completed" | "In Review",
+    notes: "",
+    results: "",
+    investigator: currentUser.name
+  });
+
+  const [updateInvForm, setUpdateInvForm] = useState({
+    status: "Completed" as "Pending" | "Completed" | "In Review",
+    results: "",
+    investigator: currentUser.name
+  });
+
+  const handleAddMedicationSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedInmate || !newMedForm.name || !newMedForm.dosage) return;
+
+    const medId = `MED-${Math.floor(100 + Math.random() * 900)}`;
+    const newMedication = {
+      id: medId,
+      name: newMedForm.name.trim(),
+      dosage: newMedForm.dosage.trim(),
+      frequency: newMedForm.frequency.trim(),
+      startDate: newMedForm.startDate,
+      endDate: newMedForm.endDate ? newMedForm.endDate : undefined,
+      prescribedBy: newMedForm.prescribedBy.trim() || currentUser.name,
+      status: "Active" as const,
+      purpose: newMedForm.purpose.trim()
+    };
+
+    const updatedInmate = {
+      ...selectedInmate,
+      medications: [...(selectedInmate.medications || []), newMedication]
+    };
+
+    onUpdateInmate(updatedInmate);
+    setSelectedInmate(updatedInmate);
+    setIsAddMedModalOpen(false);
+    
+    // Reset form
+    setNewMedForm({
+      name: "",
+      dosage: "",
+      frequency: "",
+      startDate: new Date().toISOString().split("T")[0],
+      endDate: "",
+      prescribedBy: currentUser.name,
+      purpose: ""
+    });
+  };
+
+  const handleDiscontinueMedication = (medId: string) => {
+    if (!selectedInmate) return;
+
+    const updatedMedications = (selectedInmate.medications || []).map((med) => {
+      if (med.id === medId) {
+        return {
+          ...med,
+          status: "Discontinued" as const,
+          endDate: new Date().toISOString().split("T")[0]
+        };
+      }
+      return med;
+    });
+
+    const updatedInmate = {
+      ...selectedInmate,
+      medications: updatedMedications
+    };
+
+    onUpdateInmate(updatedInmate);
+    setSelectedInmate(updatedInmate);
+  };
+
+  const handleAddInvestigationSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedInmate || !newInvForm.type || !newInvForm.requestDate) return;
+
+    const invId = `INV-${Math.floor(1000 + Math.random() * 9000)}`;
+    const newInvestigation = {
+      id: invId,
+      type: newInvForm.type.trim(),
+      requestDate: newInvForm.requestDate,
+      status: newInvForm.status,
+      notes: newInvForm.notes.trim(),
+      results: newInvForm.status === "Completed" ? newInvForm.results.trim() : undefined,
+      investigator: newInvForm.investigator.trim() || currentUser.name
+    };
+
+    const updatedInmate = {
+      ...selectedInmate,
+      medicalInvestigations: [...(selectedInmate.medicalInvestigations || []), newInvestigation]
+    };
+
+    onUpdateInmate(updatedInmate);
+    setSelectedInmate(updatedInmate);
+    setIsAddInvModalOpen(false);
+
+    // Reset form
+    setNewInvForm({
+      type: "",
+      requestDate: new Date().toISOString().split("T")[0],
+      status: "Pending",
+      notes: "",
+      results: "",
+      investigator: currentUser.name
+    });
+  };
+
+  const handleOpenUpdateInvestigation = (inv: any) => {
+    setSelectedInvToUpdate(inv);
+    setUpdateInvForm({
+      status: inv.status,
+      results: inv.results || "",
+      investigator: inv.investigator || currentUser.name
+    });
+    setIsUpdateInvModalOpen(true);
+  };
+
+  const handleUpdateInvestigationSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedInmate || !selectedInvToUpdate) return;
+
+    const updatedInvestigations = (selectedInmate.medicalInvestigations || []).map((inv) => {
+      if (inv.id === selectedInvToUpdate.id) {
+        return {
+          ...inv,
+          status: updateInvForm.status,
+          results: updateInvForm.results.trim() || undefined,
+          investigator: updateInvForm.investigator.trim() || currentUser.name
+        };
+      }
+      return inv;
+    });
+
+    const updatedInmate = {
+      ...selectedInmate,
+      medicalInvestigations: updatedInvestigations
+    };
+
+    onUpdateInmate(updatedInmate);
+    setSelectedInmate(updatedInmate);
+    setIsUpdateInvModalOpen(false);
+    setSelectedInvToUpdate(null);
   };
 
   // AI Rehab Plan states
@@ -480,6 +647,207 @@ export default function InmatesList({ inmates, onAddInmate, onUpdateInmate, cell
                   </p>
                 </div>
               </div>
+            </div>
+
+            {/* Clinical Care, Investigation & Medication Ledger */}
+            <div className="border border-slate-200 bg-white rounded-xl p-5 space-y-4 shadow-3xs">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
+                <div className="flex items-center gap-2.5">
+                  <div className="p-1.5 bg-emerald-600 text-white rounded">
+                    <Activity className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-slate-900 text-sm leading-none flex items-center gap-1.5">
+                      Clinical Care & Ledger
+                    </h4>
+                    <p className="text-[11px] text-slate-500 mt-0.5">Manage medications, order clinical investigations, and record results.</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  {medicalTab === "medications" ? (
+                    <button
+                      type="button"
+                      onClick={() => setIsAddMedModalOpen(true)}
+                      className="inline-flex items-center gap-1.5 text-xs bg-emerald-600 hover:bg-emerald-700 text-white font-medium px-3 py-1.5 rounded transition-all cursor-pointer shadow-3xs"
+                    >
+                      <Plus className="w-3.5 h-3.5" /> Prescribe Medication
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => setIsAddInvModalOpen(true)}
+                      className="inline-flex items-center gap-1.5 text-xs bg-emerald-600 hover:bg-emerald-700 text-white font-medium px-3 py-1.5 rounded transition-all cursor-pointer shadow-3xs"
+                    >
+                      <Plus className="w-3.5 h-3.5" /> Order Investigation
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Sub-tabs for clinical care */}
+              <div className="flex border-b border-slate-200 text-xs">
+                <button
+                  type="button"
+                  onClick={() => setMedicalTab("medications")}
+                  className={`px-4 py-2 border-b-2 font-semibold transition-all cursor-pointer ${
+                    medicalTab === "medications"
+                      ? "border-emerald-600 text-emerald-700"
+                      : "border-transparent text-slate-500 hover:text-slate-700"
+                  }`}
+                >
+                  Active Medications ({(selectedInmate.medications || []).filter(m => m.status === 'Active').length})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setMedicalTab("investigations")}
+                  className={`px-4 py-2 border-b-2 font-semibold transition-all cursor-pointer ${
+                    medicalTab === "investigations"
+                      ? "border-emerald-600 text-emerald-700"
+                      : "border-transparent text-slate-500 hover:text-slate-700"
+                  }`}
+                >
+                  Medical Investigations ({(selectedInmate.medicalInvestigations || []).length})
+                </button>
+              </div>
+
+              {/* Tab Contents */}
+              {medicalTab === "medications" ? (
+                <div className="space-y-3">
+                  {!(selectedInmate.medications && selectedInmate.medications.length > 0) ? (
+                    <div className="text-center py-6 text-slate-400 text-xs">
+                      No active medications or prescription treatments recorded for this inmate.
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+                      {selectedInmate.medications.map((med) => {
+                        const isActive = med.status === "Active";
+                        return (
+                          <div 
+                            key={med.id} 
+                            className={`p-3.5 rounded-lg border flex flex-col justify-between ${
+                              isActive 
+                                ? "bg-emerald-50/45 border-emerald-100" 
+                                : "bg-slate-50/80 border-slate-150"
+                            }`}
+                          >
+                            <div className="space-y-1.5">
+                              <div className="flex items-center justify-between gap-1">
+                                <span className="font-bold text-slate-950 block text-xs">{med.name}</span>
+                                <span className={`text-[8px] font-bold px-1.5 py-0.5 rounded uppercase font-mono ${
+                                  isActive ? "bg-emerald-100 text-emerald-800 border border-emerald-200" : "bg-slate-200 text-slate-600 border border-slate-300"
+                                }`}>
+                                  {med.status}
+                                </span>
+                              </div>
+                              
+                              <div className="grid grid-cols-2 gap-x-2 gap-y-1 text-[11px] text-slate-600 bg-white/60 p-2 rounded border border-slate-100">
+                                <div>
+                                  <span className="text-[9px] font-bold uppercase text-slate-400 block tracking-wider">Dosage</span>
+                                  <span className="font-semibold text-slate-800 font-mono">{med.dosage}</span>
+                                </div>
+                                <div>
+                                  <span className="text-[9px] font-bold uppercase text-slate-400 block tracking-wider">Frequency</span>
+                                  <span className="font-semibold text-slate-800 font-mono">{med.frequency}</span>
+                                </div>
+                              </div>
+
+                              <p className="text-[11px] text-slate-600 leading-normal">
+                                <span className="font-semibold text-slate-700">Purpose:</span> {med.purpose || "N/A"}
+                              </p>
+                            </div>
+
+                            <div className="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between text-[10px] text-slate-400 font-mono">
+                              <div className="flex flex-col">
+                                <span>Prescribed: {med.startDate}</span>
+                                {med.endDate && <span>Ended: {med.endDate}</span>}
+                              </div>
+                              <div className="flex items-center gap-1.5">
+                                <span className="text-slate-500 font-bold">By: {med.prescribedBy.split(" ")[0]}</span>
+                                {isActive && (
+                                  <button
+                                    type="button"
+                                    onClick={() => handleDiscontinueMedication(med.id)}
+                                    className="text-[9px] font-bold bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 px-1.5 py-0.5 rounded cursor-pointer transition-colors"
+                                  >
+                                    Discontinue
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {!(selectedInmate.medicalInvestigations && selectedInmate.medicalInvestigations.length > 0) ? (
+                    <div className="text-center py-6 text-slate-400 text-xs">
+                      No clinical investigations have been ordered or performed.
+                    </div>
+                  ) : (
+                    <div className="space-y-3 text-xs">
+                      {selectedInmate.medicalInvestigations.map((inv) => {
+                        const isCompleted = inv.status === "Completed";
+                        const isPending = inv.status === "Pending";
+                        return (
+                          <div 
+                            key={inv.id} 
+                            className="p-3.5 bg-slate-50/50 hover:bg-slate-50 rounded-lg border border-slate-200 flex flex-col justify-between"
+                          >
+                            <div className="flex items-start justify-between gap-4">
+                              <div className="space-y-1">
+                                <h5 className="font-bold text-slate-900 text-xs flex items-center gap-1.5">
+                                  <FlaskConical className="w-3.5 h-3.5 text-emerald-600" /> {inv.type}
+                                </h5>
+                                <p className="text-slate-500 text-[11px] font-mono font-bold">{inv.id} • Ordered: {inv.requestDate}</p>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <span className={`text-[8px] font-bold px-2 py-0.5 rounded-full uppercase font-mono ${
+                                  isCompleted 
+                                    ? "bg-emerald-100 text-emerald-800 border border-emerald-200" 
+                                    : isPending
+                                    ? "bg-amber-100 text-amber-800 border border-amber-200"
+                                    : "bg-indigo-100 text-indigo-800 border border-indigo-200"
+                                }`}>
+                                  {inv.status}
+                                </span>
+                                {!isCompleted && (
+                                  <button
+                                    type="button"
+                                    onClick={() => handleOpenUpdateInvestigation(inv)}
+                                    className="text-[9px] font-bold bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 px-1.5 py-0.5 rounded cursor-pointer shadow-3xs"
+                                  >
+                                    Update Results
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+
+                            <div className="mt-2.5 p-2.5 bg-white rounded border border-slate-200/60 leading-normal text-slate-700">
+                              <span className="block text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Clinical Indication / Notes</span>
+                              {inv.notes || "No clinical notes supplied."}
+                            </div>
+
+                            {inv.results && (
+                              <div className="mt-2 p-2.5 bg-emerald-50/30 text-emerald-950 rounded border border-emerald-100/50 leading-normal">
+                                <span className="block text-[9px] font-bold text-emerald-700 uppercase tracking-wider mb-0.5">Investigation Findings / Results</span>
+                                {inv.results}
+                              </div>
+                            )}
+
+                            <div className="mt-2.5 text-[10px] text-slate-400 font-mono flex items-center justify-end gap-1.5">
+                              <span>Assigned clinician:</span>
+                              <span className="font-semibold text-slate-600">{inv.investigator || "N/A"}</span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* AI Rehabilitation Assessor Card */}
@@ -1009,6 +1377,324 @@ export default function InmatesList({ inmates, onAddInmate, onUpdateInmate, cell
                 </button>
               </div>
 
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* PRESCRIBE MEDICATION MODAL */}
+      {isAddMedModalOpen && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-xl shadow-xl max-w-lg w-full border border-slate-200 overflow-hidden flex flex-col max-h-[90vh]">
+            <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-900 text-white">
+              <div className="flex items-center gap-2">
+                <Activity className="w-5 h-5 text-emerald-500" />
+                <h3 className="font-bold text-base">Prescribe Treatment / Medication</h3>
+              </div>
+              <button 
+                onClick={() => setIsAddMedModalOpen(false)}
+                className="text-slate-400 hover:text-white transition-colors cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleAddMedicationSubmit} className="flex-1 overflow-y-auto p-6 space-y-4 text-xs">
+              <div>
+                <label className="block font-bold text-slate-600 mb-1">Medication or Treatment Name *</label>
+                <input
+                  type="text"
+                  required
+                  value={newMedForm.name}
+                  onChange={(e) => setNewMedForm({...newMedForm, name: e.target.value})}
+                  placeholder="e.g., Metformin HCl, Albuterol Inhaler"
+                  className="w-full p-2 bg-slate-50 border border-slate-200 rounded focus:outline-none focus:border-emerald-500"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block font-bold text-slate-600 mb-1">Dosage *</label>
+                  <input
+                    type="text"
+                    required
+                    value={newMedForm.dosage}
+                    onChange={(e) => setNewMedForm({...newMedForm, dosage: e.target.value})}
+                    placeholder="e.g., 500 mg, 2 puffs"
+                    className="w-full p-2 bg-slate-50 border border-slate-200 rounded focus:outline-none focus:border-emerald-500"
+                  />
+                </div>
+                <div>
+                  <label className="block font-bold text-slate-600 mb-1">Frequency *</label>
+                  <input
+                    type="text"
+                    required
+                    value={newMedForm.frequency}
+                    onChange={(e) => setNewMedForm({...newMedForm, frequency: e.target.value})}
+                    placeholder="e.g., Once daily, As needed"
+                    className="w-full p-2 bg-slate-50 border border-slate-200 rounded focus:outline-none focus:border-emerald-500"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block font-bold text-slate-600 mb-1">Start Date *</label>
+                  <input
+                    type="date"
+                    required
+                    value={newMedForm.startDate}
+                    onChange={(e) => setNewMedForm({...newMedForm, startDate: e.target.value})}
+                    className="w-full p-2 bg-slate-50 border border-slate-200 rounded focus:outline-none focus:border-emerald-500"
+                  />
+                </div>
+                <div>
+                  <label className="block font-bold text-slate-600 mb-1">End Date (Optional)</label>
+                  <input
+                    type="date"
+                    value={newMedForm.endDate}
+                    onChange={(e) => setNewMedForm({...newMedForm, endDate: e.target.value})}
+                    className="w-full p-2 bg-slate-50 border border-slate-200 rounded focus:outline-none focus:border-emerald-500"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-600 mb-1">Clinical Indication / Purpose *</label>
+                <input
+                  type="text"
+                  required
+                  value={newMedForm.purpose}
+                  onChange={(e) => setNewMedForm({...newMedForm, purpose: e.target.value})}
+                  placeholder="e.g., Type 2 Diabetes glycemic control, asthma relief"
+                  className="w-full p-2 bg-slate-50 border border-slate-200 rounded focus:outline-none focus:border-emerald-500"
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-600 mb-1">Prescribing Clinician</label>
+                <input
+                  type="text"
+                  value={newMedForm.prescribedBy}
+                  onChange={(e) => setNewMedForm({...newMedForm, prescribedBy: e.target.value})}
+                  placeholder="Dr. Robert Vance, MD"
+                  className="w-full p-2 bg-slate-50 border border-slate-200 rounded focus:outline-none focus:border-emerald-500 font-mono"
+                />
+              </div>
+
+              <div className="pt-4 border-t border-slate-100 flex items-center justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => setIsAddMedModalOpen(false)}
+                  className="px-4 py-2 text-slate-500 hover:bg-slate-100 font-medium rounded transition-colors cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded transition-colors shadow-xs cursor-pointer"
+                >
+                  Prescribe Treatment
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ORDER CLINICAL INVESTIGATION MODAL */}
+      {isAddInvModalOpen && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-xl shadow-xl max-w-lg w-full border border-slate-200 overflow-hidden flex flex-col max-h-[90vh]">
+            <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-900 text-white">
+              <div className="flex items-center gap-2">
+                <FlaskConical className="w-5 h-5 text-emerald-500" />
+                <h3 className="font-bold text-base">Order Clinical Investigation</h3>
+              </div>
+              <button 
+                onClick={() => setIsAddInvModalOpen(false)}
+                className="text-slate-400 hover:text-white transition-colors cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleAddInvestigationSubmit} className="flex-1 overflow-y-auto p-6 space-y-4 text-xs">
+              <div>
+                <label className="block font-bold text-slate-600 mb-1">Investigation Type / Procedure Name *</label>
+                <input
+                  type="text"
+                  required
+                  value={newInvForm.type}
+                  onChange={(e) => setNewInvForm({...newInvForm, type: e.target.value})}
+                  placeholder="e.g., Blood Panel, Chest X-Ray, Dental Checkup"
+                  className="w-full p-2 bg-slate-50 border border-slate-200 rounded focus:outline-none focus:border-emerald-500"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block font-bold text-slate-600 mb-1">Order Date *</label>
+                  <input
+                    type="date"
+                    required
+                    value={newInvForm.requestDate}
+                    onChange={(e) => setNewInvForm({...newInvForm, requestDate: e.target.value})}
+                    className="w-full p-2 bg-slate-50 border border-slate-200 rounded focus:outline-none focus:border-emerald-500"
+                  />
+                </div>
+                <div>
+                  <label className="block font-bold text-slate-600 mb-1">Initial Status</label>
+                  <select
+                    value={newInvForm.status}
+                    onChange={(e) => setNewInvForm({...newInvForm, status: e.target.value as any})}
+                    className="w-full p-2 bg-slate-50 border border-slate-200 rounded focus:outline-none focus:border-emerald-500"
+                  >
+                    <option value="Pending">Pending</option>
+                    <option value="In Review">In Review</option>
+                    <option value="Completed">Completed</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-600 mb-1">Clinical Indication / Diagnostic Notes *</label>
+                <textarea
+                  required
+                  rows={3}
+                  value={newInvForm.notes}
+                  onChange={(e) => setNewInvForm({...newInvForm, notes: e.target.value})}
+                  placeholder="Enter the reason for ordering this clinical investigation, symptoms reported, etc..."
+                  className="w-full p-2 bg-slate-50 border border-slate-200 rounded focus:outline-none focus:border-emerald-500 resize-none"
+                />
+              </div>
+
+              {newInvForm.status === "Completed" && (
+                <div>
+                  <label className="block font-bold text-slate-600 mb-1">Investigation Findings / Results *</label>
+                  <textarea
+                    required
+                    rows={3}
+                    value={newInvForm.results}
+                    onChange={(e) => setNewInvForm({...newInvForm, results: e.target.value})}
+                    placeholder="Enter the findings, laboratory readings, or medical analysis..."
+                    className="w-full p-2 bg-slate-50 border border-slate-200 rounded focus:outline-none focus:border-emerald-500 resize-none"
+                  />
+                </div>
+              )}
+
+              <div>
+                <label className="block font-bold text-slate-600 mb-1">Ordering Clinician</label>
+                <input
+                  type="text"
+                  value={newInvForm.investigator}
+                  onChange={(e) => setNewInvForm({...newInvForm, investigator: e.target.value})}
+                  placeholder="Dr. Robert Vance, MD"
+                  className="w-full p-2 bg-slate-50 border border-slate-200 rounded focus:outline-none focus:border-emerald-500 font-mono"
+                />
+              </div>
+
+              <div className="pt-4 border-t border-slate-100 flex items-center justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => setIsAddInvModalOpen(false)}
+                  className="px-4 py-2 text-slate-500 hover:bg-slate-100 font-medium rounded transition-colors cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded transition-colors shadow-xs cursor-pointer"
+                >
+                  Order Investigation
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* UPDATE INVESTIGATION STATUS & FINDINGS MODAL */}
+      {isUpdateInvModalOpen && selectedInvToUpdate && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-xl shadow-xl max-w-lg w-full border border-slate-200 overflow-hidden flex flex-col max-h-[90vh]">
+            <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-900 text-white">
+              <div className="flex items-center gap-2">
+                <FlaskConical className="w-5 h-5 text-emerald-500" />
+                <h3 className="font-bold text-base">Update Findings: {selectedInvToUpdate.type}</h3>
+              </div>
+              <button 
+                onClick={() => {
+                  setIsUpdateInvModalOpen(false);
+                  setSelectedInvToUpdate(null);
+                }}
+                className="text-slate-400 hover:text-white transition-colors cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleUpdateInvestigationSubmit} className="flex-1 overflow-y-auto p-6 space-y-4 text-xs">
+              <div>
+                <span className="block font-bold text-slate-400 uppercase tracking-wider text-[9px] mb-1">Clinical Indication</span>
+                <p className="bg-slate-50 p-3 rounded border border-slate-100 text-slate-600 leading-normal">{selectedInvToUpdate.notes || "N/A"}</p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block font-bold text-slate-600 mb-1">Clinical Status *</label>
+                  <select
+                    value={updateInvForm.status}
+                    onChange={(e) => setUpdateInvForm({...updateInvForm, status: e.target.value as any})}
+                    className="w-full p-2 bg-slate-50 border border-slate-200 rounded focus:outline-none focus:border-emerald-500"
+                  >
+                    <option value="Pending">Pending</option>
+                    <option value="In Review">In Review</option>
+                    <option value="Completed">Completed</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block font-bold text-slate-600 mb-1">Assigned Clinician *</label>
+                  <input
+                    type="text"
+                    required
+                    value={updateInvForm.investigator}
+                    onChange={(e) => setUpdateInvForm({...updateInvForm, investigator: e.target.value})}
+                    className="w-full p-2 bg-slate-50 border border-slate-200 rounded focus:outline-none focus:border-emerald-500 font-mono"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-600 mb-1">Findings / Diagnostic Laboratory Results *</label>
+                <textarea
+                  required={updateInvForm.status === "Completed"}
+                  rows={4}
+                  value={updateInvForm.results}
+                  onChange={(e) => setUpdateInvForm({...updateInvForm, results: e.target.value})}
+                  placeholder="Record blood pressure, sugar levels, radiologist report notes, or clinical outcomes..."
+                  className="w-full p-2 bg-slate-50 border border-slate-200 rounded focus:outline-none focus:border-emerald-500 resize-none"
+                />
+              </div>
+
+              <div className="pt-4 border-t border-slate-100 flex items-center justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsUpdateInvModalOpen(false);
+                    setSelectedInvToUpdate(null);
+                  }}
+                  className="px-4 py-2 text-slate-500 hover:bg-slate-100 font-medium rounded transition-colors cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded transition-colors shadow-xs cursor-pointer"
+                >
+                  Save Findings
+                </button>
+              </div>
             </form>
           </div>
         </div>

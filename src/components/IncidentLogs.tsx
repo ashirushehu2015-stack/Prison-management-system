@@ -12,7 +12,8 @@ import {
   Shield,
   Search,
   MessageSquare,
-  Activity
+  Activity,
+  FileDown
 } from "lucide-react";
 import { Incident, Inmate, Guard, UserAccount } from "../types";
 
@@ -118,6 +119,44 @@ export default function IncidentLogs({ incidents, inmates, guards, onAddIncident
 
   const activeInmates = inmates.filter(i => i.status === "Incarcerated");
 
+  const handleExportIncidents = () => {
+    let report = `=======================================================================\n`;
+    report += `                     ICONIC UNIVERSITY CORRECTIONAL FACILITY\n`;
+    report += `                            INCIDENT SECURITY LOG REPORT\n`;
+    report += `=======================================================================\n`;
+    report += `Generated On: ${new Date().toLocaleString()}\n`;
+    report += `Total Incidents Exported: ${filteredIncidents.length}\n`;
+    report += `Filter Applied: Severity = ${severityFilter}\n`;
+    report += `-----------------------------------------------------------------------\n\n`;
+
+    filteredIncidents.forEach((inc, index) => {
+      report += `[INCIDENT ${index + 1} OF ${filteredIncidents.length}]\n`;
+      report += `ID:          ${inc.id}\n`;
+      report += `Title:       ${inc.title}\n`;
+      report += `Date/Time:   ${inc.date} @ ${inc.time}\n`;
+      report += `Severity:    ${inc.severity.toUpperCase()}\n`;
+      report += `Location:    ${inc.location}\n`;
+      report += `Status:      ${inc.status}\n`;
+      report += `Reporting Guard: ${getGuardName(inc.reportingGuardId)}\n`;
+      report += `Inmates Involved: ${getInmateNames(inc.involvedInmateIds)}\n`;
+      report += `-----------------------------------------------------------------------\n`;
+      report += `DESCRIPTION:\n${inc.description}\n`;
+      report += `-----------------------------------------------------------------------\n`;
+      report += `ACTIONS TAKEN:\n${inc.actionsTaken || "None recorded"}\n`;
+      report += `=======================================================================\n\n`;
+    });
+
+    const blob = new Blob([report], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `incident_report_${new Date().toISOString().split("T")[0]}.txt`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="p-8 max-w-7xl mx-auto w-full flex flex-col lg:flex-row gap-6 h-[calc(100vh-4rem)] overflow-hidden">
       
@@ -131,12 +170,21 @@ export default function IncidentLogs({ incidents, inmates, guards, onAddIncident
               <h3 className="font-bold text-slate-900 tracking-tight text-lg">Facility Incident Logs</h3>
               <p className="text-xs text-slate-500">{filteredIncidents.length} security events logged</p>
             </div>
-            <button
-              onClick={() => setIsAddModalOpen(true)}
-              className="flex items-center gap-2 text-xs bg-rose-600 hover:bg-rose-700 text-white font-medium px-3.5 py-2 rounded-lg transition-all shadow-sm shadow-rose-900/10 cursor-pointer"
-            >
-              <Plus className="w-4.5 h-4.5" /> File Incident
-            </button>
+            <div className="flex gap-2">
+              <button
+                onClick={handleExportIncidents}
+                className="flex items-center gap-1.5 text-xs border border-slate-300 hover:bg-slate-50 text-slate-700 font-medium px-3 py-2 rounded-lg transition-all cursor-pointer shadow-3xs"
+                title="Export filtered incident logs to a structured text file"
+              >
+                <FileDown className="w-4 h-4 text-slate-500" /> Export
+              </button>
+              <button
+                onClick={() => setIsAddModalOpen(true)}
+                className="flex items-center gap-1.5 text-xs bg-rose-600 hover:bg-rose-700 text-white font-medium px-3.5 py-2 rounded-lg transition-all shadow-sm shadow-rose-900/10 cursor-pointer animate-fade-in"
+              >
+                <Plus className="w-4 h-4" /> File Incident
+              </button>
+            </div>
           </div>
 
           <div className="relative">

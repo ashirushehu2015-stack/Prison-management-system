@@ -10,7 +10,8 @@ import {
   FileText,
   UserCheck,
   AlertTriangle,
-  Lock
+  Lock,
+  FileDown
 } from "lucide-react";
 import { Visit, Inmate, UserAccount } from "../types";
 
@@ -78,6 +79,40 @@ export default function VisitorLog({ visits, inmates, onAddVisit, onUpdateVisitS
 
   const activeInmates = inmates.filter(i => i.status === "Incarcerated");
 
+  const handleExportVisits = () => {
+    let report = `=======================================================================\n`;
+    report += `                     ICONIC UNIVERSITY CORRECTIONAL FACILITY\n`;
+    report += `                             VISITATION REGISTRY LOG REPORT\n`;
+    report += `=======================================================================\n`;
+    report += `Generated On: ${new Date().toLocaleString()}\n`;
+    report += `Total Scheduled Visitation Sessions: ${visits.length}\n`;
+    report += `-----------------------------------------------------------------------\n\n`;
+
+    visits.forEach((v, index) => {
+      report += `[VISIT SESS ${index + 1} OF ${visits.length}]\n`;
+      report += `Session ID:       ${v.id}\n`;
+      report += `Visitor Name:     ${v.visitorName}\n`;
+      report += `Relationship:     ${v.relationship}\n`;
+      report += `Assigned Inmate:  ${v.inmateName} (${v.inmateId})\n`;
+      report += `Scheduled Date:   ${v.visitDate}\n`;
+      report += `Time Window:      ${v.startTime} - ${v.endTime}\n`;
+      report += `Gate Status:      ${v.status.toUpperCase()}\n`;
+      report += `-----------------------------------------------------------------------\n`;
+      report += `DOSSIER NOTES:\n${v.notes || "No extra medical/security clearance notes listed."}\n`;
+      report += `=======================================================================\n\n`;
+    });
+
+    const blob = new Blob([report], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `visitation_registry_${new Date().toISOString().split("T")[0]}.txt`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="p-8 max-w-7xl mx-auto w-full space-y-8">
       
@@ -87,18 +122,27 @@ export default function VisitorLog({ visits, inmates, onAddVisit, onUpdateVisitS
           <h2 className="text-2xl font-bold tracking-tight text-slate-900">Visitation Registry & Control</h2>
           <p className="text-sm text-slate-500">Log, screen, and schedule upcoming personal or legal family visits.</p>
         </div>
-        {["Admin", "Warden", "Visitor Desk"].includes(currentUser.role) ? (
+        <div className="flex items-center gap-2 shrink-0">
           <button
-            onClick={() => setIsAddModalOpen(true)}
-            className="flex items-center gap-2 text-xs bg-rose-600 hover:bg-rose-700 text-white font-semibold px-4 py-2.5 rounded-lg shadow-sm transition-colors cursor-pointer shrink-0"
+            onClick={handleExportVisits}
+            className="flex items-center gap-1.5 text-xs border border-slate-300 hover:bg-slate-50 text-slate-700 font-semibold px-4 py-2.5 rounded-lg transition-all cursor-pointer shadow-3xs"
+            title="Export visitation log registry to a structured text file"
           >
-            <Plus className="w-4.5 h-4.5" /> Book Visitation Session
+            <FileDown className="w-4 h-4 text-slate-500" /> Export Registry
           </button>
-        ) : (
-          <div className="flex items-center gap-2 text-xs bg-slate-100 text-slate-400 font-semibold px-4 py-2.5 rounded-lg border border-slate-200 select-none">
-            <Lock className="w-4 h-4 text-slate-300" /> Registry Read-Only
-          </div>
-        )}
+          {["Admin", "Warden", "Visitor Desk"].includes(currentUser.role) ? (
+            <button
+              onClick={() => setIsAddModalOpen(true)}
+              className="flex items-center gap-2 text-xs bg-rose-600 hover:bg-rose-700 text-white font-semibold px-4 py-2.5 rounded-lg shadow-sm transition-colors cursor-pointer shrink-0"
+            >
+              <Plus className="w-4.5 h-4.5" /> Book Visitation Session
+            </button>
+          ) : (
+            <div className="flex items-center gap-2 text-xs bg-slate-100 text-slate-400 font-semibold px-4 py-2.5 rounded-lg border border-slate-200 select-none">
+              <Lock className="w-4 h-4 text-slate-300" /> Registry Read-Only
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Roster Table of sessions */}

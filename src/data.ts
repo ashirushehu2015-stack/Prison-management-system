@@ -16,6 +16,37 @@ export const INITIAL_INMATES: Inmate[] = [
     medicalNotes: "Slight asthma; uses inhaler as-needed. No food allergies.",
     behaviorScore: 82,
     caseNotes: "Marcus has maintained excellent behavior over the last quarter. He is working in the library and participates actively in the restorative justice seminars. Very cooperative with guard staff.",
+    medicalInvestigations: [
+      {
+        id: "INV-8401",
+        type: "Pulmonary Function Test",
+        requestDate: "2026-06-15",
+        status: "Completed",
+        notes: "Evaluate mild exercise-induced asthma severity.",
+        results: "Mild airway obstruction. FEV1/FVC ratio within acceptable limits. Continue standard albuterol rescue inhaler.",
+        investigator: "Dr. Robert Vance, MD"
+      },
+      {
+        id: "INV-8402",
+        type: "Routine Eye Exam",
+        requestDate: "2026-07-10",
+        status: "Pending",
+        notes: "Subject reports slight blurry vision when reading.",
+        investigator: "Optometrist Department"
+      }
+    ],
+    medications: [
+      {
+        id: "MED-101",
+        name: "Albuterol Inhaler (Ventolin)",
+        dosage: "90 mcg (2 puffs)",
+        frequency: "As needed every 4-6 hours",
+        startDate: "2023-05-15",
+        prescribedBy: "Dr. Robert Vance, MD",
+        status: "Active",
+        purpose: "Bronchospasm relief / asthma management"
+      }
+    ]
   },
   {
     id: "IN-1092",
@@ -32,6 +63,49 @@ export const INITIAL_INMATES: Inmate[] = [
     medicalNotes: "Chronic lower back pain. Takes prescription anti-inflammatories.",
     behaviorScore: 45,
     caseNotes: "Derrick remains high-risk. Disciplinary report filed last month following a verbal altercation in the yard. Refuses to attend educational classes, but has recently shown some interest in the culinary training program.",
+    medicalInvestigations: [
+      {
+        id: "INV-9201",
+        type: "Lumbar Spine MRI",
+        requestDate: "2025-11-04",
+        status: "Completed",
+        notes: "Symptomatic lower back pain radiating down left thigh.",
+        results: "Mild L4-L5 disc protrusion without significant neural canal stenosis. Recommended physical therapy and NSAIDs.",
+        investigator: "Dr. Sarah Kim, Neurologist"
+      },
+      {
+        id: "INV-9202",
+        type: "Physical Therapy Assessment",
+        requestDate: "2026-07-02",
+        status: "In Review",
+        notes: "Assessment of active core strength and pain thresholds for prison labor release.",
+        results: "Subject displays moderate lumbar stiffness. Recommended for 6-week core reinforcement program.",
+        investigator: "PT Daniel Craig"
+      }
+    ],
+    medications: [
+      {
+        id: "MED-201",
+        name: "Ibuprofen (Advil)",
+        dosage: "400 mg",
+        frequency: "Twice daily after meals",
+        startDate: "2025-11-10",
+        prescribedBy: "Dr. Robert Vance, MD",
+        status: "Active",
+        purpose: "Chronic lower back pain inflammation"
+      },
+      {
+        id: "MED-202",
+        name: "Cyclobenzaprine",
+        dosage: "5 mg",
+        frequency: "Once nightly before sleep",
+        startDate: "2026-03-12",
+        endDate: "2026-06-12",
+        prescribedBy: "Dr. Robert Vance, MD",
+        status: "Discontinued",
+        purpose: "Acute lumbar muscle spasm therapy"
+      }
+    ]
   },
   {
     id: "IN-4451",
@@ -48,6 +122,39 @@ export const INITIAL_INMATES: Inmate[] = [
     medicalNotes: "Type 2 Diabetes. Requires daily blood sugar monitoring and insulin shots with dinner.",
     behaviorScore: 95,
     caseNotes: "Extremely quiet and respectful. Julian runs the inmate peer-tutoring math program. Has requested early release consideration based on good behavior. No disciplinary history.",
+    medicalInvestigations: [
+      {
+        id: "INV-5101",
+        type: "Comprehensive Metabolic Panel",
+        requestDate: "2026-04-12",
+        status: "Completed",
+        notes: "Quarterly glycemic evaluation and metabolic tracking.",
+        results: "HbA1c level is 7.2% (stable). Kidney and liver functions are well within healthy clinical margins.",
+        investigator: "Iconic Lab Services"
+      }
+    ],
+    medications: [
+      {
+        id: "MED-301",
+        name: "Insulin Glargine (Lantus)",
+        dosage: "12 Units",
+        frequency: "Once daily at dinner",
+        startDate: "2024-01-11",
+        prescribedBy: "Dr. Robert Vance, MD",
+        status: "Active",
+        purpose: "Type 2 Diabetes long-acting glycemic control"
+      },
+      {
+        id: "MED-302",
+        name: "Metformin HCl",
+        dosage: "500 mg",
+        frequency: "Twice daily with meals",
+        startDate: "2024-01-11",
+        prescribedBy: "Dr. Robert Vance, MD",
+        status: "Active",
+        purpose: "Oral glucose-lowering therapy"
+      }
+    ]
   },
   {
     id: "IN-8830",
@@ -64,6 +171,17 @@ export const INITIAL_INMATES: Inmate[] = [
     medicalNotes: "Penicillin allergy. Dental examination pending.",
     behaviorScore: 71,
     caseNotes: "Carlos has shown positive progress. He participates in the landscaping crew and has logged 150 hours of vocational garden work. Expressed a desire to transition to a minimum-security block next month.",
+    medicalInvestigations: [
+      {
+        id: "INV-3001",
+        type: "Comprehensive Dental Evaluation",
+        requestDate: "2026-07-15",
+        status: "Pending",
+        notes: "Reports mild localized pain in upper-right premolar.",
+        investigator: "Dr. Helen Rostova, Dental Officer"
+      }
+    ],
+    medications: []
   },
   {
     id: "IN-5104",
@@ -80,6 +198,8 @@ export const INITIAL_INMATES: Inmate[] = [
     medicalNotes: "None.",
     behaviorScore: 89,
     caseNotes: "Successfully served his sentence. Discharged with clean records on February 1st, 2025. Set up with an external parole officer and employment at local logistics yard.",
+    medicalInvestigations: [],
+    medications: []
   }
 ];
 

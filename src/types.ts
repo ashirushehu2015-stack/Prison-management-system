@@ -2,6 +2,28 @@ export type SecurityLevel = 'Minimum' | 'Medium' | 'Maximum';
 
 export type InmateStatus = 'Incarcerated' | 'Released' | 'Transferred';
 
+export interface MedicalInvestigation {
+  id: string;
+  type: string;
+  requestDate: string;
+  status: 'Pending' | 'Completed' | 'In Review';
+  notes: string;
+  results?: string;
+  investigator?: string;
+}
+
+export interface Medication {
+  id: string;
+  name: string;
+  dosage: string;
+  frequency: string;
+  startDate: string;
+  endDate?: string;
+  prescribedBy: string;
+  status: 'Active' | 'Discontinued';
+  purpose: string;
+}
+
 export interface Inmate {
   id: string;
   name: string;
@@ -17,6 +39,8 @@ export interface Inmate {
   medicalNotes: string;
   behaviorScore: number; // 0-100
   caseNotes: string;
+  medicalInvestigations?: MedicalInvestigation[];
+  medications?: Medication[];
 }
 
 export interface Cell {

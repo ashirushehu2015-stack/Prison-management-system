@@ -1,7 +1,8 @@
 import React, { useState } from "react";
-import { Lock, Shield, Mail, ArrowRight, AlertCircle, Eye, EyeOff, ShieldCheck, Key } from "lucide-react";
+import { Lock, Shield, Mail, ArrowRight, AlertCircle, Eye, EyeOff, ShieldCheck, Key, X } from "lucide-react";
 import { UserAccount } from "../types";
 import IconicLogo from "./IconicLogo";
+import { motion, AnimatePresence } from "motion/react";
 
 interface LoginProps {
   users: UserAccount[];
@@ -14,6 +15,7 @@ export default function Login({ users, onLogin }: LoginProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [selectedUserForPass, setSelectedUserForPass] = useState<string | null>(null);
+  const [isResetModalOpen, setIsResetModalOpen] = useState(false);
 
   const handleLoginSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -289,14 +291,95 @@ export default function Login({ users, onLogin }: LoginProps) {
           </span>
           <button 
             type="button"
-            onClick={() => alert("Please consult your warden supervisor to reset security ledger key cards.")}
-            className="font-bold text-[#0B2545] hover:text-rose-600 hover:underline cursor-pointer transition-colors"
+            onClick={() => setIsResetModalOpen(true)}
+            className="font-bold text-[#0B2545] hover:text-rose-600 hover:underline cursor-pointer transition-colors focus:outline-none focus:ring-2 focus:ring-[#0B2545]/20 rounded px-1.5 py-0.5"
           >
             Forgot password?
           </button>
         </div>
 
       </div>
+
+      {/* Reset Password Modal Overlay */}
+      <AnimatePresence>
+        {isResetModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            {/* Backdrop with elegant blur */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsResetModalOpen(false)}
+              className="absolute inset-0 bg-slate-950/65 backdrop-blur-xs"
+            />
+
+            {/* Modal Box */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              transition={{ type: "spring", duration: 0.4 }}
+              className="relative w-full max-w-md bg-white rounded-2xl border border-slate-100 shadow-2xl p-6 overflow-hidden z-10 select-none"
+            >
+              {/* Decorative top accent */}
+              <div className="absolute top-0 left-0 right-0 h-1.5 bg-[#0B2545]" />
+
+              {/* Close Button */}
+              <button
+                type="button"
+                onClick={() => setIsResetModalOpen(false)}
+                className="absolute top-4 right-4 p-1.5 rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-50 transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#0B2545]/10"
+                aria-label="Close dialog"
+              >
+                <X className="w-4 h-4" />
+              </button>
+
+              <div className="flex flex-col items-center text-center mt-2">
+                {/* Security Key Ring Visual */}
+                <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center text-[#0B2545] mb-4 border border-blue-100/50">
+                  <Key className="w-5 h-5 animate-pulse" />
+                </div>
+
+                <h3 className="text-lg font-black tracking-tight text-slate-900 uppercase">
+                  Credentials Reset Request
+                </h3>
+                
+                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-1">
+                  Security Ledger Key Card Protocol
+                </p>
+
+                {/* Info Container */}
+                <div className="w-full mt-5 p-4.5 bg-slate-50 border border-slate-100/80 rounded-xl text-left space-y-3">
+                  <p className="text-[11.5px] leading-relaxed text-slate-600 font-medium">
+                    Due to high security protocols at the <strong className="text-slate-950 font-bold">Iconic University Correctional Facility</strong>, automated password resets are disabled on terminal consoles.
+                  </p>
+
+                  <div className="flex items-start gap-2.5 pt-3 border-t border-slate-200/50">
+                    <ShieldCheck className="w-4.5 h-4.5 text-emerald-600 shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-[11.5px] font-bold text-slate-800 leading-tight">
+                        Required Action
+                      </p>
+                      <p className="text-[11px] text-slate-500 mt-1 leading-relaxed">
+                        Please consult your <strong className="text-[#0B2545] font-bold">Warden Supervisor</strong> or local <strong className="text-[#0B2545] font-bold">PMS System Administrator</strong> directly to verify your identity and authorize a key card or passkey reset.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Dismiss Button */}
+                <button
+                  type="button"
+                  onClick={() => setIsResetModalOpen(false)}
+                  className="w-full mt-6 py-2.5 bg-[#0B2545] hover:bg-[#071931] text-white font-bold rounded-xl text-xs tracking-wider uppercase transition-all shadow-md shadow-blue-950/5 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#0B2545]/20"
+                >
+                  Acknowledge Protocol
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
     </div>
   );

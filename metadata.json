@@ -1,0 +1,6 @@
+{
+  "name": "MIT 800 Capstone Project",
+  "description": "An all-in-one system for managing inmate registries, housing allocations, guard schedules, incident tracking, and visitor logging with AI-powered rehabilitation planning.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

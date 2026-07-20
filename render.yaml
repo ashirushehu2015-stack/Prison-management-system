@@ -1,7 +1,0 @@
-services:
-  - type: web
-    name: prison-management-system
-    runtime: static
-    buildCommand: npm run build
-    staticPublishPath: ./dist
-
